@@ -3,51 +3,19 @@ import Timeszones from '../data/timezones';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import TextFieldGroup from './common/textFieldGroup';
-
+import {Field, reduxForm} from 'redux-form';
 
 class SignupForm extends Component{
     constructor(props){
         super(props);
         this.state={
-            title:'',
-            categories:'',
-            content:'',
             isLoading: false,
-            invalid: true
         }
-        this.onSubmit=this.onSubmit.bind(this);
-        this.onChange=this.onChange.bind(this);
-        this.checkUserExists=this.checkUserExists.bind(this);
-    }
-
-    onSubmit(e){
-        e.preventDefault();
-        this.setState({
-            isLoading: true
-        });
-        const values = {
-            title: this.state.title,
-            categories: this.state.categories,
-            content: this.state.content,
-        }
-        this.props.userSignupRequest(values)
-            .then(() => this.setState({isLoading: false}))
-            .then(() => {
-                this.props.addFlashMessage({
-                    type: 'success',
-                    text: 'you signed up successfully. Welcome!'
-                });
-                this.props.history.push('/')});
-    }
-
-    onChange(e){
-        this.setState({
-            [e.target.name]: e.target.value
-        });
     }
 
     checkUserExists(e){
         const val=e.target.value;
+        const name=e.target.name;
         if(val !==''){
             this.props.isUserExists(val).
             then((res) => {
@@ -66,47 +34,45 @@ class SignupForm extends Component{
         }
     }
 
+    onSubmit(values){
+        this.setState({
+            isLoading: true
+        });
+        console.log(values);
+        this.props.userSignupRequest(values)
+            .then(() => this.setState({isLoading: false}))
+            .then(() => {
+                this.props.addFlashMessage({
+                    type: 'success',
+                    text: 'you signed up successfully. Welcome!'
+                });
+                this.props.history.push('/')});
+    }
+
     render(){
         const options = _.map(Timeszones, (val, key) =>
             <option key={val} value={val}>{key}</option>
         );
-
+        const {handleSubmit} = this.props;
         return(
-            <form onSubmit={this.onSubmit}>
+            <form onSubmit={handleSubmit(this.onSubmit.bind(this))}>
                 <h1>Join our community!</h1>
 
-                <TextFieldGroup field='title'
-                                value={this.state.title}
-                                label="Username" type="text"
-                                onChange={this.onChange}
-                                checkUserExists={this.checkUserExists}
-                />
-                <TextFieldGroup field='categories'
-                                value={this.state.categories}
-                                label="Email"
-                                type="text"
-                                onChange={this.onChange}
-                                checkUserExists={this.checkUserExists}
-
-                />
+                <Field label="Username" name="title" component={TextFieldGroup} checkUserExists={this.checkUserExists.bind(this)}/>
+                <Field label="Email" name="categories" component={TextFieldGroup} checkUserExists={this.checkUserExists.bind(this)}/>
 
                 <div className="group-control">
                     <label>
                         Timezone
                     </label>
-                    <select
-                        className="form-control"
-                        name="content"
-                        onChange={this.onChange}
-                        value={this.state.content}
-                    >
+                    <Field name="content" component="select">
                         <option value="" disabled>Choose Your Timezone</option>
                         {options}
-                    </select>
+                    </Field>
                 </div>
 
                 <div className="form-group">
-                    <button disabled={this.state.isLoading || this.state.invalid} className="btn btn-primary btn-lg">
+                    <button disabled={this.state.isLoading } className="btn btn-primary btn-lg">
                         Sign up
                     </button>
                 </div>
@@ -120,5 +86,18 @@ SignupForm.propTypes = {
     history: PropTypes.object.isRequired,
     addFlashMessage: PropTypes.func.isRequired,
 }
+function validate(values){
+    const errors={};
+    if(!values.title){
+        errors.title="Enter username...";
+    }
+    if(!values.categories){
+        errors.categories="Enter email...";
+    }
+    if(!values.content){
+        errors.content="Select timezone...";
+    }
+    return errors;
+}
 
-export default SignupForm;
+export default reduxForm({validate, form: 'postsNewForm'})(SignupForm);
