@@ -1,8 +1,9 @@
 import {combineReducers} from 'redux';
-import flashMessages from './flashMessages'
-
+import flashMessages from './flashMessages';
+import {reducer as formReducer} from 'redux-form';
 const RootReducer = combineReducers({
-    flashMessages
+    flashMessages,
+    form: formReducer
 });
 
 export default RootReducer;
