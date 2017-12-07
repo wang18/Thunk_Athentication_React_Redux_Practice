@@ -1,6 +1,11 @@
 import React, {Component} from 'react';
 import TextFieldGroup from './common/textFieldGroup';
-import {Field, reduxForm} from 'redux-form';
+import {Field, reduxForm, SubmissionError} from 'redux-form';
+import {connect} from 'react-redux';
+import {login} from '../actions/login';
+import {bindActionCreators} from 'redux';
+import PropTypes from 'prop-types';
+import _ from 'lodash';
 
 class LoginForm extends Component{
     constructor(props){
@@ -9,16 +14,34 @@ class LoginForm extends Component{
             isLoading: false
         }
     }
-    onSubmit(){
-
+    onSubmit(values){
+        this.setState({
+            isLoading: true
+        });
+        this.props.login(values).then(
+            (res) => {
+                const ind=_.findIndex(res.data, {
+                    'title':values.title,
+                    'categories': values.categories
+                });
+                if(ind!=-1){
+                    console.log(values);
+                    this.props.history.push('/');
+                }else{
+                    console.log("NO SUCH USER...");
+                }
+            }
+        )
+        this.setState({isLoading: false});
     }
     render(){
-        const {handleSubmit} =this.props;
+        const {handleSubmit,error} =this.props;
         return(
-            <form>
+            <form onSubmit={handleSubmit(this.onSubmit.bind(this))}>
                 <h1>Login</h1>
                 <Field label='Username' name='title' component={TextFieldGroup}/>
                 <Field label='Email' name='categories' component={TextFieldGroup}/>
+                {error && <strong>{error}</strong>}
                 <div className='form-group'>
                     <button className='btn btn-primary btn-lg' disabled={this.state.isLoading}>Login</button>
                 </div>
@@ -28,6 +51,20 @@ class LoginForm extends Component{
 
 function validate(values){
     const errors ={};
-    if(){}
+    if(!values.title){
+        errors.title="Enter username...";
+    }
+    if(!values.categories){
+        errors.categories="Enter email...";
+    }
+    return errors;
 }
-export default reduxForm({validate, form: 'loginForm'})(LoginForm)
+
+const mapDispatchToProps=(dispatch) =>{
+    return bindActionCreators({login}, dispatch);
+}
+
+LoginForm.propsTypes={
+    login: PropTypes.func.isRequired
+}
+export default reduxForm({validate, form: 'loginForm'})(connect(null,mapDispatchToProps)(LoginForm));
