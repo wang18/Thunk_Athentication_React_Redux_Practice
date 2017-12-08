@@ -6,6 +6,7 @@ import {login} from '../actions/login';
 import {bindActionCreators} from 'redux';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
+import {addFlashMessage} from "../actions/flash_messages";
 
 class LoginForm extends Component{
     constructor(props){
@@ -18,7 +19,14 @@ class LoginForm extends Component{
         this.setState({
             isLoading: true
         });
-        this.props.login(values).then(
+        this.props.login(values).then(() => {
+            this.props.addFlashMessage({
+                type: 'success',
+                text: 'you login successfully. Welcome!'
+            })
+        });
+        this.props.history.push('/');
+        /*this.props.login(values).then(
             (res) => {
                 const ind=_.findIndex(res.data, {
                     'title':values.title,
@@ -31,7 +39,7 @@ class LoginForm extends Component{
                     console.log("NO SUCH USER...");
                 }
             }
-        )
+        )*/
         this.setState({isLoading: false});
     }
     render(){
@@ -61,7 +69,7 @@ function validate(values){
 }
 
 const mapDispatchToProps=(dispatch) =>{
-    return bindActionCreators({login}, dispatch);
+    return bindActionCreators({login, addFlashMessage}, dispatch);
 }
 
 LoginForm.propsTypes={

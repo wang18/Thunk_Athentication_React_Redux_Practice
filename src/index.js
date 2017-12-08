@@ -11,6 +11,9 @@ import SignupPage from './components/signupPage';
 import registerServiceWorker from './registerServiceWorker';
 import createAppStore from './store/index';
 import LoginPage from './components/login_page';
+import EventPage from './components/event_page';
+import requireAuth from './components/require_authentication';
+
 const AppStore = createAppStore();
 
 ReactDOM.render(
@@ -22,6 +25,7 @@ ReactDOM.render(
                     <Route exact path="/" component={Greetings}/>
                     <Route path="/signup" component={SignupPage}/>
                     <Route path="/login" component={LoginPage}/>
+                    <Route path="/event" component={requireAuth(EventPage)}/>
                 </Switch>
             </div>
         </BrowserRouter>
